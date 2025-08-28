@@ -1,6 +1,6 @@
 /**:
     ros__parameters:
-      video_device: "/dev/video6"
+      video_device: "/dev/video4"
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera"
@@ -8,8 +8,8 @@
       av_device_format: "YUV422P"
       image_width: 1280
       image_height: 720
-      camera_name: "tracking_bottom"
-      # camera_info_url: "package://usb_cam/config/camera_info_1.yaml"
+      camera_name: "tracking_front"
+      # camera_info_url: "package://usb_cam/config/camera_info_0.yaml"
       brightness: 10
       contrast: -1
       saturation: -1
