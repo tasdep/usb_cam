@@ -121,6 +121,7 @@ typedef struct parameters_t
   int gain;
   int white_balance;
   int exposure;
+  int exposure_time;
   int focus;
   bool auto_white_balance;
   bool autoexposure;
@@ -145,6 +146,7 @@ typedef struct parameters_t
     gain(-1),
     white_balance(-1),
     exposure(-1),
+    exposure_time(-1),
     focus(-1),
     auto_white_balance(true),
     autoexposure(true),
