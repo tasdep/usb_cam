@@ -30,38 +30,32 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import argparse
 import os
-from pathlib import Path  # noqa: E402
+from pathlib import Path
 import sys
 
-# Hack to get relative import of .camera_config file working
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
 
-from camera_config import CameraConfig, USB_CAM_DIR  # noqa: E402
-
-from launch import LaunchDescription  # noqa: E402
-from launch.actions import GroupAction  # noqa: E402
-from launch_ros.actions import Node  # noqa: E402
-
-
-CAMERAS = []
-CAMERAS.append(
-    CameraConfig(
-        name='camera1',
-        param_path=Path(USB_CAM_DIR, 'config', 'params_1.yaml')
-    )
-    # Add more Camera's here and they will automatically be launched below
-)
+from camera_config import CameraConfig, USB_CAM_DIR
+from launch import LaunchDescription
+from launch.actions import GroupAction
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    ld = LaunchDescription()
+    cameras = [
+        CameraConfig(
+            name="camera0",
+            param_path=Path(USB_CAM_DIR, 'config', 'camera_ros_params.yaml'),
+        ),
+        CameraConfig(
+            name="camera1",
+            param_path=Path(USB_CAM_DIR, 'config', 'camera_ros_params.yaml'),
+        ),
+    ]
 
-    parser = argparse.ArgumentParser(description='usb_cam demo')
-    parser.add_argument('-n', '--node-name', dest='node_name', type=str,
-                        help='name for device', default='usb_cam')
+    ld = LaunchDescription()
 
     camera_nodes = [
         Node(
@@ -71,7 +65,7 @@ def generate_launch_description():
             parameters=[camera.param_path],
             remappings=camera.remappings
         )
-        for camera in CAMERAS
+        for camera in cameras
     ]
 
     camera_group = GroupAction(camera_nodes)
