@@ -56,12 +56,33 @@ namespace usb_cam
 
 using utils::io_method_t;
 
+namespace
+{
+
+void rotate_image_180(char * data, size_t pixel_count, size_t pixel_stride)
+{
+  if (data == nullptr || pixel_count < 2 || pixel_stride == 0) {
+    return;
+  }
+
+  std::vector<char> tmp(pixel_stride);
+  for (size_t i = 0; i < pixel_count / 2; ++i) {
+    char * front = data + (i * pixel_stride);
+    char * back = data + ((pixel_count - 1 - i) * pixel_stride);
+    memcpy(tmp.data(), front, pixel_stride);
+    memcpy(front, back, pixel_stride);
+    memcpy(back, tmp.data(), pixel_stride);
+  }
+}
+
+}  // namespace
+
 
 UsbCam::UsbCam()
 : m_device_name(), m_io(io_method_t::IO_METHOD_MMAP), m_fd(-1),
   m_number_of_buffers(4), m_buffers(new usb_cam::utils::buffer[m_number_of_buffers]), m_image(),
   m_avframe(NULL), m_avcodec(NULL), m_avoptions(NULL),
-  m_avcodec_context(NULL), m_is_capturing(false), m_framerate(0),
+  m_avcodec_context(NULL), m_is_capturing(false), m_rotate_180(false), m_framerate(0),
   m_epoch_time_shift_us(usb_cam::utils::get_epoch_time_shift_us()), m_supported_formats()
 {}
 
@@ -85,6 +106,11 @@ void UsbCam::process_image(const char * src, char * & dest, const int & bytes_us
     memcpy(dest, src, m_image.size_in_bytes);
   } else {
     m_image.pixel_format->convert(src, dest, bytes_used);
+  }
+
+  if (m_rotate_180) {
+    const size_t pixel_stride = m_image.bytes_per_line / m_image.width;
+    rotate_image_180(dest, m_image.number_of_pixels, pixel_stride);
   }
 }
 
@@ -512,6 +538,9 @@ void UsbCam::configure(
 {
   m_device_name = parameters.device_name;
   m_io = io_method;
+  m_rotate_180 = parameters.rotate_180 &&
+    parameters.pixel_format_name != "mjpeg" &&
+    parameters.pixel_format_name != "raw_mjpeg";
 
   // Open device file descriptor before anything else
   open_device();
