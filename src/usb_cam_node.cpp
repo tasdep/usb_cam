@@ -83,6 +83,7 @@ UsbCamNode::UsbCamNode(const rclcpp::NodeOptions & node_options)
   this->declare_parameter("exposure", 100);
   this->declare_parameter("autofocus", false);
   this->declare_parameter("focus", -1);  // 0-255, -1 "leave alone"
+  this->declare_parameter("rotate_180", false);
 
   get_params();
   init();
@@ -231,7 +232,7 @@ void UsbCamNode::get_params()
       "camera_name", "camera_info_url", "frame_id", "framerate", "image_height", "image_width",
       "io_method", "pixel_format", "av_device_format", "video_device", "brightness", "contrast",
       "saturation", "sharpness", "gain", "auto_white_balance", "white_balance", "autoexposure",
-      "exposure", "autofocus", "focus"
+      "exposure", "autofocus", "focus", "rotate_180"
     }
   );
 
@@ -287,6 +288,8 @@ void UsbCamNode::assign_params(const std::vector<rclcpp::Parameter> & parameters
       m_parameters.autofocus = parameter.as_bool();
     } else if (parameter.get_name() == "focus") {
       m_parameters.focus = parameter.as_int();
+    } else if (parameter.get_name() == "rotate_180") {
+      m_parameters.rotate_180 = parameter.as_bool();
     } else {
       RCLCPP_WARN(this->get_logger(), "Invalid parameter name: %s", parameter.get_name().c_str());
     }
@@ -397,6 +400,13 @@ bool UsbCamNode::take_and_send_image()
 
 bool UsbCamNode::take_and_send_image_mjpeg()
 {
+  if (m_parameters.rotate_180) {
+    RCLCPP_WARN_ONCE(
+      this->get_logger(),
+      "rotate_180 is not supported for the compressed MJPEG publish path; publishing unrotated "
+      "compressed frames.");
+  }
+
   // Only resize if required
   if (sizeof(m_compressed_img_msg->data) != m_camera->get_image_size_in_bytes()) {
     m_compressed_img_msg->format = "jpeg";

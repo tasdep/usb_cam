@@ -123,6 +123,7 @@ typedef struct parameters_t
   int exposure;
   int exposure_time;
   int focus;
+  bool rotate_180;
   bool auto_white_balance;
   bool autoexposure;
   bool autofocus;
@@ -148,6 +149,7 @@ typedef struct parameters_t
     exposure(-1),
     exposure_time(-1),
     focus(-1),
+    rotate_180(false),
     auto_white_balance(true),
     autoexposure(true),
     autofocus(false)
@@ -430,6 +432,7 @@ private:
   AVCodecContext * m_avcodec_context;
 
   bool m_is_capturing;
+  bool m_rotate_180;
   int m_framerate;
   const time_t m_epoch_time_shift_us;
   std::vector<capture_format_t> m_supported_formats;
